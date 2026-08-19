@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -14,5 +15,7 @@ app.get('/api/health', (req, res) => {
     message: 'ProductHub API is running',
   });
 });
+
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
