@@ -1,10 +1,7 @@
+import AppRoutes from './routes/AppRoutes';
+
 function App() {
-  return (
-    <div>
-      <h1>ProductHub</h1>
-      <p>Product Management Platform</p>
-    </div>
-  );
+  return <AppRoutes />;
 }
 
 export default App;
