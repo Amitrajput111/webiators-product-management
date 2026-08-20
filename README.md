@@ -4,8 +4,8 @@ A full-stack product management system built with React, Node.js, Express, and M
 
 ## Live Deployment Links
 
-- **Live Application (Frontend)**: [https://webiators-product-management.vercel.app](https://webiators-product-management.vercel.app)
-- **Live API Endpoint (Backend)**: [https://webiators-product-management.vercel.app/api/health](https://webiators-product-management.vercel.app/api/health)
+- **Live Application (Frontend)**: [https://frontend-livid-six-59.vercel.app](https://frontend-livid-six-59.vercel.app)
+- **Live API Endpoint (Backend)**: [https://backend-ashy-ten-31.vercel.app/api/health](https://backend-ashy-ten-31.vercel.app/api/health)
 
 ## Features
 
@@ -20,7 +20,7 @@ A full-stack product management system built with React, Node.js, Express, and M
 - **Frontend**: React, Vite, React Router DOM, CSS3
 - **Backend**: Node.js, Express, MongoDB (Mongoose), Joi Validation
 - **Auth**: JSON Web Tokens (JWT), bcryptjs
-- **Deployment**: Vercel (Serverless Fullstack)
+- **Deployment**: Vercel (Production Monorepo)
 
 ## Getting Started
 
