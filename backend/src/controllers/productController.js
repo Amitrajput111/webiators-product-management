@@ -125,6 +125,12 @@ if (error) {
   });
 }
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    success: false,
+    message: 'Invalid product ID',
+  });
+}
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -161,6 +167,12 @@ if (error) {
 // Delete product
 const deleteProduct = async (req, res) => {
   try {
+     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID',
+      });
+    }
     const product = await Product.findById(req.params.id);
 
     if (!product) {
