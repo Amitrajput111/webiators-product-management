@@ -9,6 +9,8 @@ const {
 } = require('../controllers/productController');
 
 const protect = require('../middlewares/authMiddleware');
+const validate = require('../middlewares/validateMiddleware');
+const { productSchema } = require('../validators/productValidator');
 
 const router = express.Router();
 
@@ -17,9 +19,8 @@ router.get('/', getProducts);
 router.get('/:id', getProduct);
 
 // Protected
-
-router.post('/', protect, createProduct);
-router.put('/:id', protect, updateProduct);
+router.post('/', protect, validate(productSchema), createProduct);
+router.put('/:id', protect, validate(productSchema), updateProduct);
 router.delete('/:id', protect, deleteProduct);
 
 module.exports = router;

@@ -1,20 +1,11 @@
 const Product = require('../models/Product');
-const { productSchema } = require('../validators/productValidator');
 const mongoose = require('mongoose');
 
 // Create product
 const createProduct = async (req, res) => {
-    const { error, value } = productSchema.validate(req.body);
-
-if (error) {
-  return res.status(400).json({
-    success: false,
-    message: error.details[0].message,
-  });
-}
   try {
     const product = await Product.create({
-      ...value,
+      ...req.body,
       createdBy: req.user.id,
     });
 
@@ -116,21 +107,14 @@ const getProduct = async (req, res) => {
 
 // Update product
 const updateProduct = async (req, res) => {
-    const { error, value } = productSchema.validate(req.body);
-
-if (error) {
-  return res.status(400).json({
-    success: false,
-    message: error.details[0].message,
-  });
-}
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    success: false,
-    message: 'Invalid product ID',
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID',
+      });
+    }
+
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -147,7 +131,7 @@ if (error) {
       });
     }
 
-    Object.assign(product,value );
+    Object.assign(product, req.body);
 
     await product.save();
 
@@ -163,6 +147,7 @@ if (error) {
     });
   }
 };
+
 
 // Delete product
 const deleteProduct = async (req, res) => {
