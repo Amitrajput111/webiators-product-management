@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import fallbackProducts from "../../data/products";
 
 const getDefaultImage = (name) => {
   const n = (name || "").toLowerCase();
@@ -27,8 +28,8 @@ const resolveProductImage = (img, name) => {
 };
 
 const ProductList = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(fallbackProducts);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -47,21 +48,17 @@ const ProductList = () => {
 
   const fetchProducts = async () => {
     try {
-      setLoading(true);
-
-      const response = await fetch(
-        "/api/products"
-      );
-
+      const response = await fetch("/api/products");
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to fetch products");
+      if (response.ok && result.success && Array.isArray(result.data) && result.data.length > 0) {
+        setProducts(result.data);
+      } else {
+        setProducts(fallbackProducts);
       }
-
-      setProducts(result.data || []);
     } catch (err) {
-      setError(err.message);
+      console.warn("API offline, utilizing fallback catalog:", err);
+      setProducts(fallbackProducts);
     } finally {
       setLoading(false);
     }

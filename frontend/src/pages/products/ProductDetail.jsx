@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import fallbackProducts from "../../data/products";
 
 const getDefaultImage = (name) => {
   const n = (name || "").toLowerCase();
@@ -30,8 +31,10 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState(() => {
+    return fallbackProducts.find((p) => String(p._id || p.id) === String(id)) || null;
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
@@ -39,19 +42,23 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(
-          `/api/products/${id}`
-        );
-
+        const response = await fetch(`/api/products/${id}`);
         const result = await response.json();
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || "Product not found");
+        if (response.ok && result.success && result.data) {
+          setProduct(result.data);
+        } else {
+          const found = fallbackProducts.find(
+            (p) => String(p._id || p.id) === String(id)
+          ) || fallbackProducts[0];
+          setProduct(found);
         }
-
-        setProduct(result.data);
       } catch (err) {
-        setError(err.message);
+        console.warn("Product API offline, using fallback data:", err);
+        const found = fallbackProducts.find(
+          (p) => String(p._id || p.id) === String(id)
+        ) || fallbackProducts[0];
+        setProduct(found);
       } finally {
         setLoading(false);
       }

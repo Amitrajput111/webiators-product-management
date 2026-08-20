@@ -1,5 +1,6 @@
 const products = [
   {
+    _id: "1",
     id: 1,
     name: "Wireless Headphones",
     description: "Premium wireless headphones with improved sound.",
@@ -9,6 +10,7 @@ const products = [
     stock: 30,
   },
   {
+    _id: "2",
     id: 2,
     name: "Mechanical Keyboard",
     description: "High-quality mechanical keyboard for productivity and gaming.",
@@ -18,6 +20,7 @@ const products = [
     stock: 20,
   },
   {
+    _id: "3",
     id: 3,
     name: "Smart Fitness Watch",
     description: "Feature-packed smartwatch with AMOLED display, heart rate monitoring, and long battery life.",
@@ -27,6 +30,7 @@ const products = [
     stock: 15,
   },
   {
+    _id: "4",
     id: 4,
     name: "Ergonomic Wireless Mouse",
     description: "Precision wireless mouse designed for all-day wrist comfort and dual-mode connectivity.",
@@ -36,6 +40,7 @@ const products = [
     stock: 45,
   },
   {
+    _id: "5",
     id: 5,
     name: "UltraWide 4K Monitor",
     description: "34-inch curved 4K monitor with vivid color accuracy and high refresh rate for creators.",
