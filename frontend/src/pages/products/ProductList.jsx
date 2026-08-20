@@ -28,11 +28,11 @@ const resolveProductImage = (img, name) => {
   return cleanImg || defaultImage;
 };
 
-let cachedProductsList = null;
+import { getCachedProductList, setCachedProductList } from "../../utils/productCache";
 
 const ProductList = () => {
-  const [products, setProducts] = useState(() => cachedProductsList || []);
-  const [loading, setLoading] = useState(() => !cachedProductsList);
+  const [products, setProducts] = useState(() => getCachedProductList());
+  const [loading, setLoading] = useState(() => getCachedProductList().length === 0);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -55,16 +55,16 @@ const ProductList = () => {
       const result = await response.json();
 
       if (response.ok && result.success && Array.isArray(result.data) && result.data.length > 0) {
-        cachedProductsList = result.data;
+        setCachedProductList(result.data);
         setProducts(result.data);
-      } else if (!cachedProductsList) {
-        cachedProductsList = fallbackProducts;
+      } else if (getCachedProductList().length === 0) {
+        setCachedProductList(fallbackProducts);
         setProducts(fallbackProducts);
       }
     } catch (err) {
       console.warn("API offline, utilizing fallback catalog:", err);
-      if (!cachedProductsList) {
-        cachedProductsList = fallbackProducts;
+      if (getCachedProductList().length === 0) {
+        setCachedProductList(fallbackProducts);
         setProducts(fallbackProducts);
       }
     } finally {

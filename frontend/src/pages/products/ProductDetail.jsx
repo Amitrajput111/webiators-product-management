@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import fallbackProducts from "../../data/products";
 import { API_BASE_URL } from "../../config/api";
+import { getCachedProduct, setCachedProduct } from "../../utils/productCache";
 
 const getDefaultImage = (name) => {
   const n = (name || "").toLowerCase();
@@ -31,15 +32,30 @@ const resolveProductImage = (img, name) => {
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const initialProduct =
+    location.state?.product ||
+    getCachedProduct(id) ||
+    fallbackProducts.find(
+      (p) => String(p._id || p.id) === String(id)
+    ) ||
+    null;
+
+  const [product, setProduct] = useState(initialProduct);
+  const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     let isMounted = true;
+
+    if (location.state?.product) {
+      setProduct(location.state.product);
+      setCachedProduct(location.state.product);
+      setLoading(false);
+    }
 
     const fetchProduct = async () => {
       if (!id) {
@@ -51,16 +67,15 @@ const ProductDetail = () => {
       }
 
       try {
-        setLoading(true);
         const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
         const result = await response.json();
 
         if (isMounted) {
           if (response.ok && result.success && result.data) {
             setProduct(result.data);
+            setCachedProduct(result.data);
             setError("");
-          } else {
-            // Check fallback products by _id, id, or name match
+          } else if (!product && !initialProduct) {
             const fallback = fallbackProducts.find(
               (p) => String(p._id) === String(id) || String(p.id) === String(id)
             );
@@ -74,7 +89,7 @@ const ProductDetail = () => {
         }
       } catch (err) {
         console.warn("Product API fetch error:", err);
-        if (isMounted) {
+        if (isMounted && !product && !initialProduct) {
           const fallback = fallbackProducts.find(
             (p) => String(p._id) === String(id) || String(p.id) === String(id)
           );
@@ -97,7 +112,7 @@ const ProductDetail = () => {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, location.state]);
 
   const handleDelete = async () => {
     const confirmed = window.confirm(

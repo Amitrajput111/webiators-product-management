@@ -10,24 +10,30 @@ const productImages = [
   { name: "4K Monitor", value: "/images/products/monitor.jpg" },
 ];
 
+import { getCachedProduct, setCachedProduct } from "../../utils/productCache";
+
 function ProductEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    image: "",
-    stock: "",
-  });
+  const cached = getCachedProduct(id);
 
-  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(() => ({
+    name: cached?.name || "",
+    description: cached?.description || "",
+    price: cached?.price ?? "",
+    category: cached?.category || "",
+    image: cached?.image || "",
+    stock: cached?.stock ?? "",
+  }));
+
+  const [loading, setLoading] = useState(() => !cached);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProduct = async () => {
       try {
         const response = await fetch(
@@ -36,28 +42,34 @@ function ProductEdit() {
 
         const result = await response.json();
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || "Failed to load product");
+        if (response.ok && result.success && result.data && isMounted) {
+          const product = result.data;
+          setCachedProduct(product);
+          setForm({
+            name: product.name || "",
+            description: product.description || "",
+            price: product.price ?? "",
+            category: product.category || "",
+            image: product.image || "",
+            stock: product.stock ?? "",
+          });
         }
-
-        const product = result.data;
-
-        setForm({
-          name: product.name || "",
-          description: product.description || "",
-          price: product.price ?? "",
-          category: product.category || "",
-          image: product.image || "",
-          stock: product.stock ?? "",
-        });
       } catch (err) {
-        setError(err.message);
+        if (!cached && isMounted) {
+          setError(err.message);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleChange = (e) => {
@@ -125,11 +137,11 @@ function ProductEdit() {
 
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to update product");
+      if (result.data) {
+        setCachedProduct(result.data);
       }
 
-      navigate(`/products/${id}`);
+      navigate(`/products/${id}`, { state: { product: result.data } });
     } catch (err) {
       setError(err.message);
     } finally {

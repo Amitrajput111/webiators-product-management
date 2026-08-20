@@ -50,7 +50,8 @@ const getProducts = async (req, res) => {
         .populate('createdBy', 'name email')
         .sort({ _id: 1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
 
       Product.countDocuments(filter),
     ]);
@@ -86,7 +87,8 @@ const getProduct = async (req, res) => {
   });
 }
     const product = await Product.findById(req.params.id)
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .lean();
 
     if (!product) {
       return res.status(404).json({
