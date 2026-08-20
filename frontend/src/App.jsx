@@ -1,7 +1,8 @@
-﻿import AppRoutes from "./routes/AppRoutes";
+import AppRoutes from "./routes/AppRoutes";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
 import Footer from "./components/layout/Footer";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
@@ -12,7 +13,9 @@ function App() {
         <Navbar />
 
         <div className="page-content">
-          <AppRoutes />
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
         </div>
 
         <Footer />

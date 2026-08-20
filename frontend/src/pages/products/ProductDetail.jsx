@@ -32,12 +32,8 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const initialProduct = fallbackProducts.find(
-    (p) => String(p._id || p.id) === String(id)
-  ) || null;
-
-  const [product, setProduct] = useState(initialProduct);
-  const [loading, setLoading] = useState(!initialProduct);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
@@ -46,7 +42,16 @@ const ProductDetail = () => {
     let isMounted = true;
 
     const fetchProduct = async () => {
+      if (!id) {
+        if (isMounted) {
+          setError("Product ID missing");
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
+        setLoading(true);
         const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
         const result = await response.json();
 
@@ -54,12 +59,14 @@ const ProductDetail = () => {
           if (response.ok && result.success && result.data) {
             setProduct(result.data);
             setError("");
-          } else if (!product) {
-            const found = fallbackProducts.find(
-              (p) => String(p._id || p.id) === String(id)
-            ) || null;
-            if (found) {
-              setProduct(found);
+          } else {
+            // Check fallback products by _id, id, or name match
+            const fallback = fallbackProducts.find(
+              (p) => String(p._id) === String(id) || String(p.id) === String(id)
+            );
+            if (fallback) {
+              setProduct(fallback);
+              setError("");
             } else {
               setError(result.message || "Product not found");
             }
@@ -67,12 +74,13 @@ const ProductDetail = () => {
         }
       } catch (err) {
         console.warn("Product API fetch error:", err);
-        if (isMounted && !product) {
-          const found = fallbackProducts.find(
-            (p) => String(p._id || p.id) === String(id)
-          ) || null;
-          if (found) {
-            setProduct(found);
+        if (isMounted) {
+          const fallback = fallbackProducts.find(
+            (p) => String(p._id) === String(id) || String(p.id) === String(id)
+          );
+          if (fallback) {
+            setProduct(fallback);
+            setError("");
           } else {
             setError("Unable to load product details");
           }
@@ -124,7 +132,10 @@ const ProductDetail = () => {
   if (loading) {
     return (
       <main className="products-page">
-        <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+        <Link to="/products" className="back-link">
+          ← Back to Products
+        </Link>
+        <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
           <p style={{ color: "#64748b", fontSize: "1.1rem" }}>Loading product details...</p>
         </div>
       </main>
@@ -134,18 +145,25 @@ const ProductDetail = () => {
   if (error || !product) {
     return (
       <main className="products-page">
-        <h1>Product not found</h1>
-        <p>{error || "The requested product could not be found."}</p>
-        <Link to="/products" className="primary-btn">
-          Back to Products
+        <Link to="/products" className="back-link">
+          ← Back to Products
         </Link>
+        <div style={{ textAlign: "center", padding: "3rem 1rem", background: "#ffffff", borderRadius: "16px", marginTop: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+          <h2 style={{ color: "#0f172a", marginBottom: "0.5rem" }}>Product not found</h2>
+          <p style={{ color: "#64748b", marginBottom: "1.5rem" }}>{error || "The requested product could not be located in the catalog."}</p>
+          <Link to="/products" className="primary-btn" style={{ textDecoration: "none" }}>
+            Back to Products
+          </Link>
+        </div>
       </main>
     );
   }
 
-  const defaultImage = getDefaultImage(product.name);
-  const image = resolveProductImage(product.image, product.name);
-  const productId = product._id || product.id || id;
+  const productName = product?.name || "Product";
+  const defaultImage = getDefaultImage(productName);
+  const image = resolveProductImage(product?.image, productName);
+  const productId = product?._id || product?.id || id;
+  const priceNum = Number(product?.price || 0);
 
   return (
     <main className="products-page">
@@ -157,7 +175,7 @@ const ProductDetail = () => {
         <div className="product-detail-image">
           <img
             src={image}
-            alt={product.name || "Product image"}
+            alt={productName}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = defaultImage;
@@ -167,19 +185,19 @@ const ProductDetail = () => {
 
         <div className="product-detail-content">
           <span className="product-category">
-            {product.category || "General"}
+            {product?.category || "General"}
           </span>
 
-          <h1>{product.name}</h1>
+          <h1>{productName}</h1>
 
-          <p>{product.description}</p>
+          <p>{product?.description || "No description provided."}</p>
 
           <h2>
-            ₹{Number(product.price || 0).toLocaleString("en-IN")}
+            ₹{priceNum.toLocaleString("en-IN")}
           </h2>
 
           <p>
-            {product.stock > 0
+            {Number(product?.stock || 0) > 0
               ? `${product.stock} units available`
               : "Out of stock"}
           </p>
