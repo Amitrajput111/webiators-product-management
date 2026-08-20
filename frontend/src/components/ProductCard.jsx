@@ -1,9 +1,19 @@
-﻿const ProductCard = ({ product }) => {
-  const name = product.name?.toLowerCase() || "";
+const ProductCard = ({ product }) => {
+  const name = product?.name?.toLowerCase() || "";
 
-  const image = name.includes("headphone")
-    ? "/images/Products/headphones.jpg"
-    : "/images/Products/keyboard.jpg";
+  const defaultImage = name.includes("headphone")
+    ? "/images/products/headphones.jpg"
+    : "/images/products/keyboard.jpg";
+
+  const image =
+    product?.image && product.image.trim() !== ""
+      ? product.image
+          .replace("/images/Products/", "/images/products/")
+          .replace(
+            "/images/products/headphone.jpg",
+            "/images/products/headphones.jpg"
+          )
+      : defaultImage;
 
   return (
     <article className="product-card">
@@ -12,6 +22,11 @@
           src={image}
           alt={product.name}
           className="product-image"
+          onError={(e) => {
+            if (e.target.src !== defaultImage) {
+              e.target.src = defaultImage;
+            }
+          }}
         />
 
         <span className="stock-badge">

@@ -5,7 +5,7 @@ const products = [
     description: "Premium wireless headphones with improved sound.",
     price: 3499,
     category: "Electronics",
-    image: "/images/Products/headphone.jpg",
+    image: "/images/products/headphones.jpg",
     stock: 30,
   },
   {
@@ -14,7 +14,7 @@ const products = [
     description: "High-quality mechanical keyboard for productivity and gaming.",
     price: 2999,
     category: "Electronics",
-    image: "/images/Products/keyboard.jpg",
+    image: "/images/products/keyboard.jpg",
     stock: 20,
   },
 ];

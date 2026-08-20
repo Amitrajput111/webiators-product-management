@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const ProductList = () => {
@@ -76,21 +76,33 @@ const ProductList = () => {
       ) : (
         <div className="products-grid">
           {products.map((product) => {
-            const isHeadphone = product.name
-              ?.toLowerCase()
-              .includes("headphone");
+            const name = product.name?.toLowerCase() || "";
+            const defaultImage = name.includes("headphone")
+              ? "/images/products/headphones.jpg"
+              : "/images/products/keyboard.jpg";
+
+            const image =
+              product.image && product.image.trim() !== ""
+                ? product.image
+                    .replace("/images/Products/", "/images/products/")
+                    .replace(
+                      "/images/products/headphone.jpg",
+                      "/images/products/headphones.jpg"
+                    )
+                : defaultImage;
 
             return (
               <article className="product-card" key={product._id}>
                 <div className="product-image-wrapper">
                   <img
-                    src={
-                      isHeadphone
-                        ? "/images/Products/headphones.jpg"
-                        : "/images/Products/keyboard.jpg"
-                    }
+                    src={image}
                     alt={product.name}
                     className="product-image"
+                    onError={(e) => {
+                      if (e.target.src !== defaultImage) {
+                        e.target.src = defaultImage;
+                      }
+                    }}
                   />
 
                   <span className="stock-badge">
