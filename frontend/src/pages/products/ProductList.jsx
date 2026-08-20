@@ -1,10 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+const getDefaultImage = (name) => {
+  const n = (name || "").toLowerCase();
+  if (n.includes("watch") || n.includes("smart")) return "/images/products/smartwatch.jpg";
+  if (n.includes("mouse")) return "/images/products/mouse.jpg";
+  if (n.includes("monitor") || n.includes("display") || n.includes("screen")) return "/images/products/monitor.jpg";
+  if (n.includes("headphone")) return "/images/products/headphones.jpg";
+  return "/images/products/keyboard.jpg";
+};
+
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const categories = ["All", ...new Set(products.map((p) => p.category).filter(Boolean))];
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
+      product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const fetchProducts = async () => {
     try {
@@ -57,7 +80,7 @@ const ProductList = () => {
         <div>
           <p className="eyebrow">ProductHub</p>
           <h1>Products</h1>
-          <p>Manage your product inventory.</p>
+          <p>Manage your product inventory ({filteredProducts.length} items).</p>
         </div>
 
         <Link to="/products/new" className="primary-btn">
@@ -65,21 +88,77 @@ const ProductList = () => {
         </Link>
       </div>
 
-      {products.length === 0 ? (
+      <div
+        className="filter-controls"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "16px",
+          marginBottom: "28px",
+          alignItems: "center",
+          justify: "space-between",
+          background: "white",
+          padding: "16px 20px",
+          borderRadius: "14px",
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.03)"
+        }}
+      >
+        <input
+          type="text"
+          placeholder="🔍 Search products by name, category..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "10px",
+            border: "1px solid #cbd5e1",
+            maxWidth: "320px",
+            width: "100%",
+            fontSize: "14px",
+            outline: "none"
+          }}
+        />
+
+        <div
+          className="category-pills"
+          style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}
+        >
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              style={{
+                padding: "8px 14px",
+                borderRadius: "20px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "13px",
+                background: selectedCategory === cat ? "#2563eb" : "#f1f5f9",
+                color: selectedCategory === cat ? "#ffffff" : "#475569",
+                transition: "all 0.2s ease"
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filteredProducts.length === 0 ? (
         <div className="empty-state">
           <h2>No products found</h2>
-          <p>Create your first product.</p>
+          <p>Try adjusting your search or category filter.</p>
           <Link to="/products/new" className="primary-btn">
             Create Product
           </Link>
         </div>
       ) : (
         <div className="products-grid">
-          {products.map((product) => {
-            const name = product.name?.toLowerCase() || "";
-            const defaultImage = name.includes("headphone")
-              ? "/images/products/headphones.jpg"
-              : "/images/products/keyboard.jpg";
+          {filteredProducts.map((product) => {
+            const defaultImage = getDefaultImage(product.name);
 
             const image =
               product.image && product.image.trim() !== ""
@@ -99,9 +178,8 @@ const ProductList = () => {
                     alt={product.name}
                     className="product-image"
                     onError={(e) => {
-                      if (e.target.src !== defaultImage) {
-                        e.target.src = defaultImage;
-                      }
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = defaultImage;
                     }}
                   />
 

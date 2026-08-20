@@ -1,5 +1,28 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const productImages = [
+  {
+    name: "Headphones",
+    value: "/images/products/headphones.jpg",
+  },
+  {
+    name: "Keyboard",
+    value: "/images/products/keyboard.jpg",
+  },
+  {
+    name: "Smart Watch",
+    value: "/images/products/smartwatch.jpg",
+  },
+  {
+    name: "Wireless Mouse",
+    value: "/images/products/mouse.jpg",
+  },
+  {
+    name: "4K Monitor",
+    value: "/images/products/monitor.jpg",
+  },
+];
 
 function ProductCreate() {
   const navigate = useNavigate();
@@ -10,6 +33,7 @@ function ProductCreate() {
     price: "",
     category: "",
     stock: "",
+    image: "/images/products/headphones.jpg",
   });
 
   const [error, setError] = useState("");
@@ -20,6 +44,27 @@ function ProductCreate() {
       ...current,
       [e.target.name]: e.target.value,
     }));
+  };
+
+  const selectImage = (image) => {
+    setForm((current) => ({
+      ...current,
+      image,
+    }));
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((current) => ({
+          ...current,
+          image: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -36,6 +81,11 @@ function ProductCreate() {
         return;
       }
 
+      let imageUrl = form.image ? form.image.trim() : "";
+      if (imageUrl.startsWith("/")) {
+        imageUrl = `${window.location.origin}${imageUrl}`;
+      }
+
       const response = await fetch(
         "http://localhost:5000/api/products",
         {
@@ -50,7 +100,7 @@ function ProductCreate() {
             price: Number(form.price),
             category: form.category.trim(),
             stock: Number(form.stock),
-            image: "https://placehold.co/600x400",
+            image: imageUrl,
           }),
         }
       );
@@ -161,6 +211,70 @@ function ProductCreate() {
             placeholder="20"
             required
           />
+        </div>
+
+        <div className="form-group product-image-selector">
+          <label>Product Image</label>
+
+          <div className="selected-image-preview">
+            <img
+              src={form.image}
+              alt="Selected product preview"
+              onError={(e) => {
+                e.target.src = "/images/products/headphones.jpg";
+              }}
+            />
+          </div>
+
+          <div className="file-upload-wrapper" style={{ margin: "14px 0" }}>
+            <label
+              htmlFor="file-upload-create"
+              className="secondary-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: "pointer",
+                padding: "10px 16px",
+                fontWeight: "600"
+              }}
+            >
+              📷 Upload Image from Computer File System
+            </label>
+            <input
+              id="file-upload-create"
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+          </div>
+
+          <p style={{ fontSize: "13px", color: "#64748b", margin: "12px 0 8px 0" }}>
+            Or select a preset product image:
+          </p>
+
+          <div className="image-options">
+            {productImages.map((image) => (
+              <button
+                type="button"
+                key={image.value}
+                className={`image-option ${
+                  form.image === image.value
+                    ? "selected"
+                    : ""
+                }`}
+                onClick={() => selectImage(image.value)}
+              >
+                <img
+                  src={image.value}
+                  alt={image.name}
+                />
+
+                <span>{image.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <button

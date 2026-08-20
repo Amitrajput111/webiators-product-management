@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+const getDefaultImage = (name) => {
+  const n = (name || "").toLowerCase();
+  if (n.includes("watch") || n.includes("smart")) return "/images/products/smartwatch.jpg";
+  if (n.includes("mouse")) return "/images/products/mouse.jpg";
+  if (n.includes("monitor") || n.includes("display") || n.includes("screen")) return "/images/products/monitor.jpg";
+  if (n.includes("headphone")) return "/images/products/headphones.jpg";
+  return "/images/products/keyboard.jpg";
+};
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -85,10 +94,7 @@ const ProductDetail = () => {
     );
   }
 
-  const name = product.name?.toLowerCase() || "";
-  const defaultImage = name.includes("headphone")
-    ? "/images/products/headphones.jpg"
-    : "/images/products/keyboard.jpg";
+  const defaultImage = getDefaultImage(product?.name);
 
   const image =
     product.image && product.image.trim() !== ""
@@ -112,9 +118,8 @@ const ProductDetail = () => {
             src={image}
             alt={product.name}
             onError={(e) => {
-              if (e.target.src !== defaultImage) {
-                e.target.src = defaultImage;
-              }
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = defaultImage;
             }}
           />
         </div>

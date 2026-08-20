@@ -17,6 +17,33 @@ const products = [
     image: "/images/products/keyboard.jpg",
     stock: 20,
   },
+  {
+    id: 3,
+    name: "Smart Fitness Watch",
+    description: "Feature-packed smartwatch with AMOLED display, heart rate monitoring, and long battery life.",
+    price: 4999,
+    category: "Wearables",
+    image: "/images/products/smartwatch.jpg",
+    stock: 15,
+  },
+  {
+    id: 4,
+    name: "Ergonomic Wireless Mouse",
+    description: "Precision wireless mouse designed for all-day wrist comfort and dual-mode connectivity.",
+    price: 1899,
+    category: "Accessories",
+    image: "/images/products/mouse.jpg",
+    stock: 45,
+  },
+  {
+    id: 5,
+    name: "UltraWide 4K Monitor",
+    description: "34-inch curved 4K monitor with vivid color accuracy and high refresh rate for creators.",
+    price: 24999,
+    category: "Displays",
+    image: "/images/products/monitor.jpg",
+    stock: 8,
+  },
 ];
 
 export default products;

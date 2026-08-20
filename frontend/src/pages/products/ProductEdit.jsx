@@ -1,5 +1,13 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+
+const productImages = [
+  { name: "Headphones", value: "/images/products/headphones.jpg" },
+  { name: "Keyboard", value: "/images/products/keyboard.jpg" },
+  { name: "Smart Watch", value: "/images/products/smartwatch.jpg" },
+  { name: "Wireless Mouse", value: "/images/products/mouse.jpg" },
+  { name: "4K Monitor", value: "/images/products/monitor.jpg" },
+];
 
 function ProductEdit() {
   const { id } = useParams();
@@ -58,6 +66,27 @@ function ProductEdit() {
     }));
   };
 
+  const selectImage = (image) => {
+    setForm((previous) => ({
+      ...previous,
+      image,
+    }));
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((previous) => ({
+          ...previous,
+          image: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -70,6 +99,11 @@ function ProductEdit() {
       if (!token) {
         navigate("/login");
         return;
+      }
+
+      let imageUrl = form.image ? form.image.trim() : "";
+      if (imageUrl.startsWith("/")) {
+        imageUrl = `${window.location.origin}${imageUrl}`;
       }
 
       const response = await fetch(
@@ -85,7 +119,7 @@ function ProductEdit() {
             description: form.description.trim(),
             price: Number(form.price),
             category: form.category.trim(),
-            image: form.image.trim(),
+            image: imageUrl,
             stock: Number(form.stock),
           }),
         }
@@ -183,16 +217,74 @@ function ProductEdit() {
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="image">Image URL</label>
+        <div className="form-group product-image-selector">
+          <label htmlFor="image">Product Image</label>
+
+          {form.image && (
+            <div className="selected-image-preview">
+              <img
+                src={form.image}
+                alt="Product preview"
+                onError={(e) => {
+                  e.target.src = "/images/products/headphones.jpg";
+                }}
+              />
+            </div>
+          )}
+
+          <div className="file-upload-wrapper" style={{ margin: "14px 0" }}>
+            <label
+              htmlFor="file-upload-edit"
+              className="secondary-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: "pointer",
+                padding: "10px 16px",
+                fontWeight: "600"
+              }}
+            >
+              📷 Upload Image from Computer File System
+            </label>
+            <input
+              id="file-upload-edit"
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+          </div>
+
           <input
             id="image"
             name="image"
             type="text"
             value={form.image}
             onChange={handleChange}
-            placeholder="Optional image URL"
+            placeholder="Or enter custom image URL"
+            style={{ marginBottom: "12px" }}
           />
+
+          <p style={{ fontSize: "13px", color: "#64748b", margin: "8px 0" }}>
+            Or select a preset product image:
+          </p>
+
+          <div className="image-options">
+            {productImages.map((img) => (
+              <button
+                type="button"
+                key={img.value}
+                className={`image-option ${
+                  form.image === img.value ? "selected" : ""
+                }`}
+                onClick={() => selectImage(img.value)}
+              >
+                <img src={img.value} alt={img.name} />
+                <span>{img.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="form-group">
