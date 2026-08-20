@@ -66,9 +66,11 @@ const getProducts = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('getProducts error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Unable to fetch products',
+      message: error.message || 'Unable to fetch products',
+      stack: error.stack,
     });
   }
 };

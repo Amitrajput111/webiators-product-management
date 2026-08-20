@@ -1,13 +1,8 @@
-﻿const app = require("../src/app");
+const app = require("../src/app");
 const connectDatabase = require("../src/config/db");
 
-let initialized = false;
+connectDatabase().catch((err) => {
+  console.error("MongoDB connection initialization error:", err);
+});
 
-module.exports = async (req, res) => {
-  if (!initialized) {
-    await connectDatabase();
-    initialized = true;
-  }
-
-  return app(req, res);
-};
+module.exports = app;
