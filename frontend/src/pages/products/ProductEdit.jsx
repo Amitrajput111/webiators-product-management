@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 const productImages = [
   { name: "Headphones", value: "/images/products/headphones.jpg" },
@@ -30,7 +31,7 @@ function ProductEdit() {
     const fetchProduct = async () => {
       try {
         const response = await fetch(
-          `/api/products/${id}`
+          `${API_BASE_URL}/api/products/${id}`
         );
 
         const result = await response.json();
@@ -104,7 +105,7 @@ function ProductEdit() {
       const imageUrl = form.image ? form.image.trim() : "";
 
       const response = await fetch(
-        `/api/products/${id}`,
+        `${API_BASE_URL}/api/products/${id}`,
         {
           method: "PUT",
           headers: {

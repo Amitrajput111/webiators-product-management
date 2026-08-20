@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import fallbackProducts from "../../data/products";
+import { API_BASE_URL } from "../../config/api";
 
 const getDefaultImage = (name) => {
   const n = (name || "").toLowerCase();
@@ -42,7 +43,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`/api/products/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
         const result = await response.json();
 
         if (response.ok && result.success && result.data) {
@@ -76,7 +77,7 @@ const ProductDetail = () => {
 
     try {
       const response = await fetch(
-        `/api/products/${id}`,
+        `${API_BASE_URL}/api/products/${id}`,
         {
           method: "DELETE",
           headers: {

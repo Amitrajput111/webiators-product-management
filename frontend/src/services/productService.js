@@ -1,4 +1,6 @@
-const API_URL = '/api/products';
+import { API_BASE_URL } from '../config/api';
+
+const API_URL = `${API_BASE_URL}/api/products`;
 
 export async function getProducts(params = {}) {
   const query = new URLSearchParams();

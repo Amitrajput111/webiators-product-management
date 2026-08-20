@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import fallbackProducts from "../../data/products";
+import { API_BASE_URL } from "../../config/api";
 
 const getDefaultImage = (name) => {
   const n = (name || "").toLowerCase();
@@ -48,7 +49,7 @@ const ProductList = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/api/products");
+      const response = await fetch(`${API_BASE_URL}/api/products`);
       const result = await response.json();
 
       if (response.ok && result.success && Array.isArray(result.data) && result.data.length > 0) {

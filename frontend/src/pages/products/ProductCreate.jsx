@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 const productImages = [
   {
@@ -84,7 +85,7 @@ function ProductCreate() {
       const imageUrl = form.image ? form.image.trim() : "";
 
       const response = await fetch(
-        "/api/products",
+        `${API_BASE_URL}/api/products`,
         {
           method: "POST",
           headers: {

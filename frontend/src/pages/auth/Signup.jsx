@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 function Signup() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ function Signup() {
 
     try {
       const response = await fetch(
-        "/api/auth/register",
+        `${API_BASE_URL}/api/auth/register`,
         {
           method: "POST",
           headers: {
