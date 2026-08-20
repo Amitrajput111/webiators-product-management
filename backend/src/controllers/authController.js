@@ -1,6 +1,7 @@
 
 const { registerSchema, loginSchema } = require('../validators/authValidator');
 const { registerUser, loginUser } = require('../services/authService');
+const User = require('../models/User');
 
 const register = async (req, res) => {
   const { error, value } = registerSchema.validate(req.body);
@@ -39,6 +40,32 @@ const login = async (req, res) => {
       message: error.details[0].message,
     });
   }
+  const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to fetch user',
+    });
+  }
+};
 
   try {
     const result = await loginUser(value);
@@ -57,9 +84,36 @@ const login = async (req, res) => {
     });
   }
 };
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to fetch user',
+    });
+  }
+};
 
 
 module.exports = {
   register,
   login,
+  getMe,
 };
