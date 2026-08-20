@@ -126,26 +126,37 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    if (product.createdBy.toString() !== req.user.id.toString()) {
+    if (
+      product.createdBy &&
+      req.user &&
+      product.createdBy.toString() !== req.user.id.toString()
+    ) {
       return res.status(403).json({
         success: false,
         message: 'You are not allowed to update this product',
       });
     }
 
-    Object.assign(product, req.body);
+    if (req.body.name !== undefined) product.name = req.body.name.trim();
+    if (req.body.description !== undefined) product.description = req.body.description.trim();
+    if (req.body.price !== undefined) product.price = Number(req.body.price);
+    if (req.body.category !== undefined) product.category = req.body.category.trim();
+    if (req.body.stock !== undefined) product.stock = Number(req.body.stock);
+    if (req.body.image !== undefined) product.image = req.body.image;
+    if (!product.createdBy && req.user) product.createdBy = req.user.id;
 
-    await product.save();
+    const updated = await product.save();
 
     return res.status(200).json({
       success: true,
       message: 'Product updated successfully',
-      data: product,
+      data: updated,
     });
   } catch (error) {
+    console.error('updateProduct error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Unable to update product',
+      message: error.message || 'Unable to update product',
     });
   }
 };
@@ -154,7 +165,7 @@ const updateProduct = async (req, res) => {
 // Delete product
 const deleteProduct = async (req, res) => {
   try {
-     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid product ID',
@@ -169,7 +180,11 @@ const deleteProduct = async (req, res) => {
       });
     }
 
-    if (product.createdBy.toString() !== req.user.id.toString()) {
+    if (
+      product.createdBy &&
+      req.user &&
+      product.createdBy.toString() !== req.user.id.toString()
+    ) {
       return res.status(403).json({
         success: false,
         message: 'You are not allowed to delete this product',
@@ -183,9 +198,10 @@ const deleteProduct = async (req, res) => {
       message: 'Product deleted successfully',
     });
   } catch (error) {
+    console.error('deleteProduct error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Unable to delete product',
+      message: error.message || 'Unable to delete product',
     });
   }
 };

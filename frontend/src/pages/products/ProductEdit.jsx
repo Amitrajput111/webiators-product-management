@@ -191,12 +191,13 @@ function ProductEdit() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="price">Price</label>
+          <label htmlFor="price">Price (₹)</label>
           <input
             id="price"
             name="price"
             type="number"
             min="0"
+            step="any"
             value={form.price}
             onChange={handleChange}
             required
