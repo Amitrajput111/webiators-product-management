@@ -48,7 +48,7 @@ const getProducts = async (req, res) => {
     const [products, total] = await Promise.all([
       Product.find(filter)
         .populate('createdBy', 'name email')
-        .sort({ createdAt: -1 })
+        .sort({ _id: 1 })
         .skip(skip)
         .limit(limit),
 

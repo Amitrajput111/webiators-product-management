@@ -28,9 +28,11 @@ const resolveProductImage = (img, name) => {
   return cleanImg || defaultImage;
 };
 
+let cachedProductsList = null;
+
 const ProductList = () => {
-  const [products, setProducts] = useState(fallbackProducts);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState(() => cachedProductsList || []);
+  const [loading, setLoading] = useState(() => !cachedProductsList);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -49,17 +51,22 @@ const ProductList = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/products`);
+      const response = await fetch(`${API_BASE_URL}/api/products?limit=100`);
       const result = await response.json();
 
       if (response.ok && result.success && Array.isArray(result.data) && result.data.length > 0) {
+        cachedProductsList = result.data;
         setProducts(result.data);
-      } else {
+      } else if (!cachedProductsList) {
+        cachedProductsList = fallbackProducts;
         setProducts(fallbackProducts);
       }
     } catch (err) {
       console.warn("API offline, utilizing fallback catalog:", err);
-      setProducts(fallbackProducts);
+      if (!cachedProductsList) {
+        cachedProductsList = fallbackProducts;
+        setProducts(fallbackProducts);
+      }
     } finally {
       setLoading(false);
     }
