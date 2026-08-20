@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const { productSchema } = require('../validators/productValidator');
+const mongoose = require('mongoose');
 
 // Create product
 const createProduct = async (req, res) => {
@@ -80,9 +81,17 @@ const getProducts = async (req, res) => {
     });
   }
 };
+
 // Get single product
 const getProduct = async (req, res) => {
+    
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    success: false,
+    message: 'Invalid product ID',
+  });
+}
     const product = await Product.findById(req.params.id)
       .populate('createdBy', 'name email');
 
