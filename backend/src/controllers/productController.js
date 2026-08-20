@@ -1,10 +1,19 @@
 const Product = require('../models/Product');
+const { productSchema } = require('../validators/productValidator');
 
 // Create product
 const createProduct = async (req, res) => {
+    const { error, value } = productSchema.validate(req.body);
+
+if (error) {
+  return res.status(400).json({
+    success: false,
+    message: error.details[0].message,
+  });
+}
   try {
     const product = await Product.create({
-      ...req.body,
+      ...value,
       createdBy: req.user.id,
     });
 
@@ -98,15 +107,16 @@ const getProduct = async (req, res) => {
 
 // Update product
 const updateProduct = async (req, res) => {
+    const { error, value } = productSchema.validate(req.body);
+
+if (error) {
+  return res.status(400).json({
+    success: false,
+    message: error.details[0].message,
+  });
+}
   try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
@@ -114,6 +124,17 @@ const updateProduct = async (req, res) => {
         message: 'Product not found',
       });
     }
+
+    if (product.createdBy.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not allowed to update this product',
+      });
+    }
+
+    Object.assign(product,value );
+
+    await product.save();
 
     return res.status(200).json({
       success: true,
@@ -131,7 +152,7 @@ const updateProduct = async (req, res) => {
 // Delete product
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
@@ -139,6 +160,15 @@ const deleteProduct = async (req, res) => {
         message: 'Product not found',
       });
     }
+
+    if (product.createdBy.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not allowed to delete this product',
+      });
+    }
+
+    await product.deleteOne();
 
     return res.status(200).json({
       success: true,
