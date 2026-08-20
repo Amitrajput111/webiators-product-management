@@ -30,7 +30,7 @@ function ProductEdit() {
     const fetchProduct = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/products/${id}`
+          `/api/products/${id}`
         );
 
         const result = await response.json();
@@ -107,7 +107,7 @@ function ProductEdit() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/products/${id}`,
+        `/api/products/${id}`,
         {
           method: "PUT",
           headers: {

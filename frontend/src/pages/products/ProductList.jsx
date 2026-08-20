@@ -34,7 +34,7 @@ const ProductList = () => {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/products"
+        "/api/products"
       );
 
       const result = await response.json();
