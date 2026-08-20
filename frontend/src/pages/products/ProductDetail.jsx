@@ -32,40 +32,63 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState(() => {
-    return fallbackProducts.find((p) => String(p._id || p.id) === String(id)) || null;
-  });
-  const [loading, setLoading] = useState(false);
+  const initialProduct = fallbackProducts.find(
+    (p) => String(p._id || p.id) === String(id)
+  ) || null;
+
+  const [product, setProduct] = useState(initialProduct);
+  const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProduct = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
         const result = await response.json();
 
-        if (response.ok && result.success && result.data) {
-          setProduct(result.data);
-        } else {
-          const found = fallbackProducts.find(
-            (p) => String(p._id || p.id) === String(id)
-          ) || fallbackProducts[0];
-          setProduct(found);
+        if (isMounted) {
+          if (response.ok && result.success && result.data) {
+            setProduct(result.data);
+            setError("");
+          } else if (!product) {
+            const found = fallbackProducts.find(
+              (p) => String(p._id || p.id) === String(id)
+            ) || null;
+            if (found) {
+              setProduct(found);
+            } else {
+              setError(result.message || "Product not found");
+            }
+          }
         }
       } catch (err) {
-        console.warn("Product API offline, using fallback data:", err);
-        const found = fallbackProducts.find(
-          (p) => String(p._id || p.id) === String(id)
-        ) || fallbackProducts[0];
-        setProduct(found);
+        console.warn("Product API fetch error:", err);
+        if (isMounted && !product) {
+          const found = fallbackProducts.find(
+            (p) => String(p._id || p.id) === String(id)
+          ) || null;
+          if (found) {
+            setProduct(found);
+          } else {
+            setError("Unable to load product details");
+          }
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleDelete = async () => {
@@ -101,16 +124,18 @@ const ProductDetail = () => {
   if (loading) {
     return (
       <main className="products-page">
-        <p>Loading product...</p>
+        <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+          <p style={{ color: "#64748b", fontSize: "1.1rem" }}>Loading product details...</p>
+        </div>
       </main>
     );
   }
 
-  if (error) {
+  if (error || !product) {
     return (
       <main className="products-page">
         <h1>Product not found</h1>
-        <p>{error}</p>
+        <p>{error || "The requested product could not be found."}</p>
         <Link to="/products" className="primary-btn">
           Back to Products
         </Link>
@@ -118,8 +143,9 @@ const ProductDetail = () => {
     );
   }
 
-  const defaultImage = getDefaultImage(product?.name);
-  const image = resolveProductImage(product?.image, product?.name);
+  const defaultImage = getDefaultImage(product.name);
+  const image = resolveProductImage(product.image, product.name);
+  const productId = product._id || product.id || id;
 
   return (
     <main className="products-page">
@@ -131,7 +157,7 @@ const ProductDetail = () => {
         <div className="product-detail-image">
           <img
             src={image}
-            alt={product.name}
+            alt={product.name || "Product image"}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = defaultImage;
@@ -141,7 +167,7 @@ const ProductDetail = () => {
 
         <div className="product-detail-content">
           <span className="product-category">
-            {product.category}
+            {product.category || "General"}
           </span>
 
           <h1>{product.name}</h1>
@@ -149,7 +175,7 @@ const ProductDetail = () => {
           <p>{product.description}</p>
 
           <h2>
-            ₹{Number(product.price).toLocaleString("en-IN")}
+            ₹{Number(product.price || 0).toLocaleString("en-IN")}
           </h2>
 
           <p>
@@ -162,7 +188,7 @@ const ProductDetail = () => {
             {token && (
               <>
                 <Link
-                  to={`/products/${product._id}/edit`}
+                  to={`/products/${productId}/edit`}
                   className="primary-btn"
                 >
                   Edit Product
