@@ -17,6 +17,7 @@ router.get('/', getProducts);
 router.get('/:id', getProduct);
 
 // Protected
+
 router.post('/', protect, createProduct);
 router.put('/:id', protect, updateProduct);
 router.delete('/:id', protect, deleteProduct);
