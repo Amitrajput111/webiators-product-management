@@ -40,32 +40,6 @@ const login = async (req, res) => {
       message: error.details[0].message,
     });
   }
-  const getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Unable to fetch user',
-    });
-  }
-};
 
   try {
     const result = await loginUser(value);
