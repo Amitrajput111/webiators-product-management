@@ -81,10 +81,7 @@ function ProductCreate() {
         return;
       }
 
-      let imageUrl = form.image ? form.image.trim() : "";
-      if (imageUrl.startsWith("/")) {
-        imageUrl = `${window.location.origin}${imageUrl}`;
-      }
+      const imageUrl = form.image ? form.image.trim() : "";
 
       const response = await fetch(
         "/api/products",

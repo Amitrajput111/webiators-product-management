@@ -9,7 +9,7 @@ const productSchema = Joi.object({
 
   category: Joi.string().trim().min(2).max(50).required(),
 
-  image: Joi.string().uri().allow('').optional(),
+  image: Joi.string().allow('').optional(),
 
   stock: Joi.number().integer().min(0).required(),
 });

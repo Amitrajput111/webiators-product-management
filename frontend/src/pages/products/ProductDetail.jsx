@@ -10,6 +10,22 @@ const getDefaultImage = (name) => {
   return "/images/products/keyboard.jpg";
 };
 
+const resolveProductImage = (img, name) => {
+  const defaultImage = getDefaultImage(name);
+  if (!img || typeof img !== "string" || img.trim() === "") {
+    return defaultImage;
+  }
+  let cleanImg = img.trim();
+  cleanImg = cleanImg.replace(/^https?:\/\/localhost(:\d+)?/, "");
+  cleanImg = cleanImg
+    .replace("/images/Products/", "/images/products/")
+    .replace(
+      "/images/products/headphone.jpg",
+      "/images/products/headphones.jpg"
+    );
+  return cleanImg || defaultImage;
+};
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -95,16 +111,7 @@ const ProductDetail = () => {
   }
 
   const defaultImage = getDefaultImage(product?.name);
-
-  const image =
-    product.image && product.image.trim() !== ""
-      ? product.image
-          .replace("/images/Products/", "/images/products/")
-          .replace(
-            "/images/products/headphone.jpg",
-            "/images/products/headphones.jpg"
-          )
-      : defaultImage;
+  const image = resolveProductImage(product?.image, product?.name);
 
   return (
     <main className="products-page">

@@ -2,6 +2,11 @@
 
 A full-stack product management system built with React, Node.js, Express, and MongoDB.
 
+## Live Deployment Links
+
+- **Live Application (Frontend)**: [https://webiators-product-management.vercel.app](https://webiators-product-management.vercel.app)
+- **Live API Endpoint (Backend)**: [https://webiators-product-management.vercel.app/api/health](https://webiators-product-management.vercel.app/api/health)
+
 ## Features
 
 - **Product Inventory Management**: Create, read, update, and delete products.
@@ -15,6 +20,7 @@ A full-stack product management system built with React, Node.js, Express, and M
 - **Frontend**: React, Vite, React Router DOM, CSS3
 - **Backend**: Node.js, Express, MongoDB (Mongoose), Joi Validation
 - **Auth**: JSON Web Tokens (JWT), bcryptjs
+- **Deployment**: Vercel (Serverless Fullstack)
 
 ## Getting Started
 
