@@ -1,7 +1,25 @@
-const products = [
+const mongoose = require('mongoose');
+
+const MONGODB_URI = 'mongodb+srv://amitrajput98267313_db_user:GgM0pR7k7gFUByqz@producthub-cluster.qh2y86m.mongodb.net/producthub?retryWrites=true&w=majority&appName=producthub-cluster';
+
+const productSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number,
+  category: String,
+  image: String,
+  stock: Number,
+  createdBy: mongoose.Schema.Types.ObjectId,
+});
+
+const Product = mongoose.model('Product', productSchema);
+
+// We need a user ID for createdBy. We can fetch one user.
+const userSchema = new mongoose.Schema({ name: String });
+const User = mongoose.model('User', userSchema);
+
+const luxuryProducts = [
   {
-    _id: "660a1b2c3d4e5f6g7h8i9j01",
-    id: 1,
     name: "Aura Chronograph Gold",
     description: "A masterpiece of horology. Featuring an 18k rose gold case, intricate chronograph movement, and a hand-stitched alligator leather strap. Crafted for the modern connoisseur.",
     price: 185000,
@@ -10,8 +28,6 @@ const products = [
     stock: 5,
   },
   {
-    _id: "660a1b2c3d4e5f6g7h8i9j02",
-    id: 2,
     name: "Classic Quilted Leather Tote",
     description: "The epitome of timeless elegance. Handcrafted from premium Italian calfskin leather with signature gold-tone hardware and diamond quilting. Spacious enough for your daily essentials.",
     price: 125000,
@@ -20,8 +36,6 @@ const products = [
     stock: 12,
   },
   {
-    _id: "660a1b2c3d4e5f6g7h8i9j03",
-    id: 3,
     name: "Oud Noir Eau de Parfum",
     description: "An intoxicating blend of rare oud wood, spicy cardamom, and sensual amber. A long-lasting, sophisticated fragrance that leaves a memorable trail.",
     price: 24500,
@@ -30,8 +44,6 @@ const products = [
     stock: 35,
   },
   {
-    _id: "660a1b2c3d4e5f6g7h8i9j04",
-    id: 4,
     name: "Diamond Solitaire Pendant",
     description: "A flawless 1.5-carat round brilliant cut diamond set in a minimalist platinum four-prong setting. Suspended on a delicate 18k white gold chain.",
     price: 345000,
@@ -40,8 +52,6 @@ const products = [
     stock: 3,
   },
   {
-    _id: "660a1b2c3d4e5f6g7h8i9j05",
-    id: 5,
     name: "Vellora Signature Sunglasses",
     description: "Oversized acetate frames with polarized gradient lenses and gold-plated temple accents. Offers 100% UV protection with unparalleled style.",
     price: 32000,
@@ -50,8 +60,6 @@ const products = [
     stock: 18,
   },
   {
-    _id: "660a1b2c3d4e5f6g7h8i9j06",
-    id: 6,
     name: "Silk Evening Gown",
     description: "Flowing pure silk evening dress featuring a dramatic plunging neckline, subtle pleating, and a sweeping train. Designed for unforgettable moments.",
     price: 85000,
@@ -61,4 +69,33 @@ const products = [
   }
 ];
 
-export default products;
+async function seed() {
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log("Connected to DB");
+
+    const user = await User.findOne();
+    if (!user) {
+      console.log("No user found, creating a dummy user...");
+      const dummyUser = await User.create({ name: "Admin User", email: "admin@vellora.com", password: "password" });
+      var userId = dummyUser._id;
+    } else {
+      var userId = user._id;
+    }
+
+    console.log("Clearing old products...");
+    await Product.deleteMany({});
+    
+    console.log("Seeding luxury products...");
+    const productsWithUser = luxuryProducts.map(p => ({ ...p, createdBy: userId }));
+    await Product.insertMany(productsWithUser);
+
+    console.log("Database seeded successfully!");
+    process.exit(0);
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+}
+
+seed();

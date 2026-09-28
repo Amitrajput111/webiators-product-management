@@ -4,31 +4,6 @@ import fallbackProducts from "../../data/products";
 import { API_BASE_URL } from "../../config/api";
 import { getCachedProduct, setCachedProduct } from "../../utils/productCache";
 
-const getDefaultImage = (name) => {
-  const n = (name || "").toLowerCase();
-  if (n.includes("watch") || n.includes("smart")) return "/images/products/smartwatch.jpg";
-  if (n.includes("mouse")) return "/images/products/mouse.jpg";
-  if (n.includes("monitor") || n.includes("display") || n.includes("screen")) return "/images/products/monitor.jpg";
-  if (n.includes("headphone")) return "/images/products/headphones.jpg";
-  return "/images/products/keyboard.jpg";
-};
-
-const resolveProductImage = (img, name) => {
-  const defaultImage = getDefaultImage(name);
-  if (!img || typeof img !== "string" || img.trim() === "") {
-    return defaultImage;
-  }
-  let cleanImg = img.trim();
-  cleanImg = cleanImg.replace(/^https?:\/\/localhost(:\d+)?/, "");
-  cleanImg = cleanImg
-    .replace("/images/Products/", "/images/products/")
-    .replace(
-      "/images/products/headphone.jpg",
-      "/images/products/headphones.jpg"
-    );
-  return cleanImg || defaultImage;
-};
-
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,9 +12,7 @@ const ProductDetail = () => {
   const initialProduct =
     location.state?.product ||
     getCachedProduct(id) ||
-    fallbackProducts.find(
-      (p) => String(p._id || p.id) === String(id)
-    ) ||
+    fallbackProducts.find((p) => String(p._id || p.id) === String(id)) ||
     null;
 
   const [product, setProduct] = useState(initialProduct);
@@ -58,14 +31,7 @@ const ProductDetail = () => {
     }
 
     const fetchProduct = async () => {
-      if (!id) {
-        if (isMounted) {
-          setError("Product ID missing");
-          setLoading(false);
-        }
-        return;
-      }
-
+      if (!id) return;
       try {
         const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
         const result = await response.json();
@@ -74,70 +40,35 @@ const ProductDetail = () => {
           if (response.ok && result.success && result.data) {
             setProduct(result.data);
             setCachedProduct(result.data);
-            setError("");
-          } else if (!product && !initialProduct) {
-            const fallback = fallbackProducts.find(
-              (p) => String(p._id) === String(id) || String(p.id) === String(id)
-            );
-            if (fallback) {
-              setProduct(fallback);
-              setError("");
-            } else {
-              setError(result.message || "Product not found");
-            }
+          } else if (!product) {
+            const fallback = fallbackProducts.find((p) => String(p._id || p.id) === String(id));
+            if (fallback) setProduct(fallback);
+            else setError("Product not found");
           }
         }
       } catch (err) {
-        console.warn("Product API fetch error:", err);
-        if (isMounted && !product && !initialProduct) {
-          const fallback = fallbackProducts.find(
-            (p) => String(p._id) === String(id) || String(p.id) === String(id)
-          );
-          if (fallback) {
-            setProduct(fallback);
-            setError("");
-          } else {
-            setError("Unable to load product details");
-          }
+        if (isMounted && !product) {
+          const fallback = fallbackProducts.find((p) => String(p._id || p.id) === String(id));
+          if (fallback) setProduct(fallback);
+          else setError("Unable to load product details");
         }
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchProduct();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [id, location.state]);
+    return () => { isMounted = false; };
+  }, [id, location.state, product]);
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this product?"
-    );
-
-    if (!confirmed) return;
-
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/products/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to delete product");
-      }
-
+      const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Unable to delete product");
       navigate("/products");
     } catch (err) {
       alert(err.message);
@@ -146,97 +77,67 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <main className="products-page">
-        <Link to="/products" className="back-link">
-          ← Back to Products
-        </Link>
-        <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-          <p style={{ color: "#64748b", fontSize: "1.1rem" }}>Loading product details...</p>
-        </div>
-      </main>
+      <div style={{ textAlign: "center", padding: "100px 24px", color: '#B8935C', letterSpacing: '2px', textTransform: 'uppercase' }}>
+        Retrieving Details...
+      </div>
     );
   }
 
   if (error || !product) {
     return (
-      <main className="products-page">
-        <Link to="/products" className="back-link">
-          ← Back to Products
-        </Link>
-        <div style={{ textAlign: "center", padding: "3rem 1rem", background: "#ffffff", borderRadius: "16px", marginTop: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
-          <h2 style={{ color: "#0f172a", marginBottom: "0.5rem" }}>Product not found</h2>
-          <p style={{ color: "#64748b", marginBottom: "1.5rem" }}>{error || "The requested product could not be located in the catalog."}</p>
-          <Link to="/products" className="primary-btn" style={{ textDecoration: "none" }}>
-            Back to Products
-          </Link>
-        </div>
-      </main>
+      <div style={{ textAlign: "center", padding: "100px 24px" }}>
+        <h2>Item not found</h2>
+        <Link to="/products" className="view-btn">Return to Collection</Link>
+      </div>
     );
   }
 
-  const productName = product?.name || "Product";
-  const defaultImage = getDefaultImage(productName);
-  const image = resolveProductImage(product?.image, productName);
   const productId = product?._id || product?.id || id;
-  const priceNum = Number(product?.price || 0);
+  const inStock = Number(product?.stock || 0) > 0;
 
   return (
-    <main className="products-page">
+    <main className="container" style={{ padding: '60px 24px' }}>
       <Link to="/products" className="back-link">
-        ← Back to Products
+        ← Back to Collection
       </Link>
 
       <section className="product-detail">
         <div className="product-detail-image">
-          <img
-            src={image}
-            alt={productName}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = defaultImage;
-            }}
-          />
+          <img src={product.image} alt={product.name} />
         </div>
 
         <div className="product-detail-content">
-          <span className="product-category">
-            {product?.category || "General"}
-          </span>
-
-          <h1>{productName}</h1>
-
-          <p>{product?.description || "No description provided."}</p>
-
-          <h2>
-            ₹{priceNum.toLocaleString("en-IN")}
-          </h2>
-
-          <p>
-            {Number(product?.stock || 0) > 0
-              ? `${product.stock} units available`
-              : "Out of stock"}
-          </p>
-
-          <div className="product-actions">
-            {token && (
-              <>
-                <Link
-                  to={`/products/${productId}/edit`}
-                  className="primary-btn"
-                >
-                  Edit Product
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="danger-btn"
-                >
-                  Delete Product
-                </button>
-              </>
-            )}
+          <span className="product-category">{product.category}</span>
+          <h1>{product.name}</h1>
+          <h2>₹{Number(product.price).toLocaleString("en-IN")}</h2>
+          
+          <div className={`stock-status ${inStock ? 'in' : 'out'}`}>
+            {inStock ? 'Available Online' : 'Currently Unavailable'}
           </div>
+
+          <p className="desc">{product.description}</p>
+          
+          <div style={{ borderTop: '1px solid #E8E6E1', borderBottom: '1px solid #E8E6E1', padding: '24px 0', marginBottom: '40px' }}>
+            <div style={{ display: 'flex', gap: '16px', color: '#555555', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <span>✓ Complimentary Shipping</span>
+              <span>✓ Complimentary Returns</span>
+            </div>
+          </div>
+
+          <button className="primary-btn action-btn" disabled={!inStock}>
+            {inStock ? 'Add to Shopping Bag' : 'Out of Stock'}
+          </button>
+
+          {token && (
+            <div className="product-actions">
+              <Link to={`/products/${productId}/edit`} className="secondary-btn" style={{ flex: 1 }}>
+                Edit Product
+              </Link>
+              <button type="button" onClick={handleDelete} className="danger-btn" style={{ flex: 1 }}>
+                Delete
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </main>
